@@ -82,8 +82,8 @@ else
 	echo "docker_redirect [start|stop] [filter_key] [docker_port =>] [=> local_port]"
 	echo
 	echo Eg.
-	echo sudo docker_redirect start <match_substring> 8080 80808
-	echo sudo docker_redirect stop <match_substring>
+	echo "sudo docker_redirect start <match_substring> 8080 80808"
+	echo "sudo docker_redirect stop <match_substring>"
 	echo
 
 	$IPTABLES -t nat -n -L PREROUTING
