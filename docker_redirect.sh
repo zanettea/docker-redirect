@@ -49,7 +49,7 @@ IPTABLES=iptables_wrapper
 iptables_wrapper() {
    docker run --network=host --privileged --rm -it $( echo -e "\
 FROM alpine\n\
-RUN apk add -U iptables iproute2\n" | docker  build -q - ) iptables "$@"
+RUN apk add -U iptables iproute2\n" | docker  build -q - | head -n 1 ) iptables "$@"
 }
 
 if [ "$1" == 'start' ]; then
@@ -60,7 +60,7 @@ if [ "$1" == 'start' ]; then
 
 	IP=`docker inspect -f '{{.Name}} {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -aq) | grep $KEY | awk '{ print $2 }'  | head -n 1`
         [ -n "$IP" ] || die "Cannot determine IP address for a container matching pattern '$2'. Please check if the container is actually running!";
-	$IPTABLES -t nat -A PREROUTING -p tcp -d $IP --dport $DOCKER_PORT  -j DNAT --to $LOCAL_IP:$LOCAL_PORT -m comment --comment "docker_redirect ${KEY} traffic"
+	$IPTABLES -t nat -I PREROUTING 1 -p tcp -d $IP --dport $DOCKER_PORT  -j DNAT --to $LOCAL_IP:$LOCAL_PORT -m comment --comment "docker_redirect ${KEY} traffic"
 	$IPTABLES -t nat -n -L PREROUTING
 elif [ "$1" == 'stop' ]; then
 	IFS=$'\n'
@@ -81,7 +81,7 @@ elif [ "$1" == 'stop' ]; then
 else
 	echo "docker_redirect [start|stop] [filter_key] [docker_port =>] [=> local_port]"
 	echo
-	echo Eg.
+	echo "Eg."
 	echo "sudo docker_redirect start <match_substring> 8080 80808"
 	echo "sudo docker_redirect stop <match_substring>"
 	echo
